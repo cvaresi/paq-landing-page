@@ -45,6 +45,8 @@
 			const objects = [];
 			let current = 0;
 
+		
+
 			init();
 			animate();
 
@@ -121,6 +123,103 @@
 
 					positions.push( x - offset, y - offset, z - offset );
 
+				}
+
+				// LQ Letters (match reference: L = thick bars, Q = thick ring + center sphere + tail)
+
+				const cellSize = 70;
+				const letterGap = 5;
+
+				// L: vertical bar 3 wide, full height; horizontal bar full width, 3 tall
+				const lBarW = 3;
+				const lBarH = 14;
+				const lFootW = 8;
+				const lFootH = 3;
+
+				const lPoints = [];
+				for ( let y = 0; y < lBarH; y ++ ) {
+					for ( let x = 0; x < lBarW; x ++ ) {
+						lPoints.push( { x, y } );
+					}
+				}
+				for ( let y = lBarH; y < lBarH + lFootH; y ++ ) {
+					for ( let x = 0; x < lFootW; x ++ ) {
+						lPoints.push( { x, y } );
+					}
+				}
+
+				// Q: thick ring (ellipse) + one center sphere + tail from lower-right
+				const qRows = 16;
+				const qCols = 16;
+				const qcx = qCols / 2;
+				const qcy = qRows / 2;
+				const qOuterRx = 6.5;
+				const qOuterRy = 7;
+				const qInnerRx = 3.5;
+				const qInnerRy = 4;
+
+				const qPoints = [];
+				for ( let gy = 0; gy < qRows; gy ++ ) {
+					for ( let gx = 0; gx < qCols; gx ++ ) {
+						const dx = gx - qcx;
+						const dy = gy - qcy;
+						const outerNorm = ( dx / qOuterRx ) * ( dx / qOuterRx ) + ( dy / qOuterRy ) * ( dy / qOuterRy );
+						const innerNorm = ( dx / qInnerRx ) * ( dx / qInnerRx ) + ( dy / qInnerRy ) * ( dy / qInnerRy );
+						const inRing = outerNorm <= 1.08 && innerNorm >= 0.92;
+						if ( inRing ) qPoints.push( { x: gx, y: gy } );
+					}
+				}
+				// Center sphere (single point in the Q hole)
+				qPoints.push( { x: qcx, y: qcy } );
+				// Tail: lower-right diagonal
+				for ( let t = 0; t <= 8; t ++ ) {
+					qPoints.push( { x: qcx + 4 + t, y: qcy + 5 + Math.floor( t * 0.8 ) } );
+					if ( t > 0 && t < 8 ) qPoints.push( { x: qcx + 4 + t, y: qcy + 5 + Math.floor( t * 0.8 ) - 1 } );
+				}
+
+				// Offset Q to the right of L
+				const lMaxX = lFootW - 1;
+				const allPoints = [];
+				for ( const p of lPoints ) {
+					allPoints.push( { x: p.x, y: p.y } );
+				}
+				for ( const p of qPoints ) {
+					allPoints.push( { x: p.x + lMaxX + letterGap, y: p.y } );
+				}
+
+				// Center combined shape and map to world (y flipped for screen-like up)
+				let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+				for ( const p of allPoints ) {
+					if ( p.x < minX ) minX = p.x;
+					if ( p.x > maxX ) maxX = p.x;
+					if ( p.y < minY ) minY = p.y;
+					if ( p.y > maxY ) maxY = p.y;
+				}
+				const cenX = ( minX + maxX ) / 2;
+				const cenY = ( minY + maxY ) / 2;
+
+				const worldPoints = [];
+				for ( const p of allPoints ) {
+					worldPoints.push( {
+						x: ( p.x - cenX ) * cellSize,
+						y: - ( p.y - cenY ) * cellSize,
+						z: 0
+					} );
+				}
+
+				for ( let i = 0; i < particlesTotal; i ++ ) {
+					if ( i < worldPoints.length ) {
+						const p = worldPoints[ i ];
+						positions.push( p.x, p.y, p.z );
+					} else {
+						const idx = i % worldPoints.length;
+						const p = worldPoints[ idx ];
+						positions.push(
+							p.x + ( Math.random() - 0.5 ) * cellSize * 0.4,
+							p.y + ( Math.random() - 0.5 ) * cellSize * 0.4,
+							p.z + ( Math.random() - 0.5 ) * cellSize * 0.4
+						);
+					}
 				}
 
 				// Random
@@ -202,7 +301,7 @@
 					.onComplete( transition )
 					.start();
 
-				current = ( current + 1 ) % 4;
+				current = ( current + 1 ) % 5;
 
 			}
 
@@ -218,7 +317,8 @@
 				for ( let i = 0, l = objects.length; i < l; i ++ ) {
 
 					const object = objects[ i ];
-					const scale = Math.sin( ( Math.floor( object.position.x ) + time ) * 0.002 ) * 0.3 + 1;
+					//const scale = Math.sin( ( Math.floor( object.position.x ) + time ) * 0.002 ) * 0.3 + 1;
+					const scale = 1;
 					object.scale.set( scale, scale, scale );
 
 				}
