@@ -38,7 +38,7 @@
 			import { CSS3DRenderer, CSS3DSprite } from 'three/addons/renderers/CSS3DRenderer.js';
 
 			let camera, scene, renderer;
-			let controls;
+			//let controls;
 
 			const particlesTotal = 512;
 			const positions = [];
@@ -53,7 +53,7 @@
 			function init() {
 
 				camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 5000 );
-				camera.position.set( 600, 400, 1500 );
+				camera.position.set( 600, 400, 5000 );
 				camera.lookAt( 0, 0, 0 );
 
 				scene = new THREE.Scene();
@@ -95,7 +95,7 @@
 
 				const amountX = 16;
 				const amountZ = 32;
-				const separationPlane = 150;
+				const separationPlane = 300;
 				const offsetX = ( ( amountX - 1 ) * separationPlane ) / 2;
 				const offsetZ = ( ( amountZ - 1 ) * separationPlane ) / 2;
 
@@ -112,7 +112,7 @@
 				// Cube
 
 				const amount = 8;
-				const separationCube = 150;
+				const separationCube = 450;
 				const offset = ( ( amount - 1 ) * separationCube ) / 2;
 
 				for ( let i = 0; i < particlesTotal; i ++ ) {
@@ -122,12 +122,13 @@
 					const z = Math.floor( i / ( amount * amount ) ) * separationCube;
 
 					positions.push( x - offset, y - offset, z - offset );
+					camera.position.set( 600, 1400, 5000 );
 
 				}
 
 				// LQ Letters (match reference: L = thick bars, Q = thick ring + center sphere + tail)
 
-				const cellSize = 200;
+				const cellSize = 250;
 				const letterGap = 3;
 
 				// L: vertical bar 3 wide, full height; horizontal bar full width, 3 tall
@@ -227,16 +228,16 @@
 				for ( let i = 0; i < particlesTotal; i ++ ) {
 
 					positions.push(
-						Math.random() * 4000 - 2000,
-						Math.random() * 4000 - 2000,
-						Math.random() * 4000 - 2000
+						Math.random() * 10000 - 5000,
+						Math.random() * 10000 - 5000,
+						Math.random() * 10000 - 5000
 					);
 
 				}
 
 				// Sphere
 
-				const radius = 750;
+				const radius = 2000;
 
 				for ( let i = 0; i < particlesTotal; i ++ ) {
 
@@ -259,7 +260,7 @@
 
 				//
 
-				controls = new TrackballControls( camera, renderer.domElement );
+				//controls = new TrackballControls( camera, renderer.domElement );
 
 				//
 
@@ -310,14 +311,14 @@
 				requestAnimationFrame( animate );
 
 				TWEEN.update();
-				controls.update();
+				//controls.update();
 
 				const time = performance.now();
 
 				for ( let i = 0, l = objects.length; i < l; i ++ ) {
 
 					const object = objects[ i ];
-					const scale = 1 + (parseInt(object.uuid.replace(/-/g,'').slice(0,8), 32) % 1001) / 1000;
+					const scale = 1 + (parseInt(object.uuid.replace(/-/g,'').slice(0,8), 16) % 1001) / 1000;
 					//const scale = Math.sin( ( Math.floor( object.position.x ) + time ) * 0.002 ) * 0.3 + 1;
 					//const scale = 1;
 					object.scale.set( scale, scale, scale );
