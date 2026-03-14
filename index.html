@@ -127,8 +127,8 @@
 
 				// LQ Letters (match reference: L = thick bars, Q = thick ring + center sphere + tail)
 
-				const cellSize = 70;
-				const letterGap = 5;
+				const cellSize = 200;
+				const letterGap = 3;
 
 				// L: vertical bar 3 wide, full height; horizontal bar full width, 3 tall
 				const lBarW = 3;
@@ -215,9 +215,9 @@
 						const idx = i % worldPoints.length;
 						const p = worldPoints[ idx ];
 						positions.push(
-							p.x + ( Math.random() - 0.5 ) * cellSize * 0.4,
-							p.y + ( Math.random() - 0.5 ) * cellSize * 0.4,
-							p.z + ( Math.random() - 0.5 ) * cellSize * 0.4
+							p.x + ( Math.random() - 0.5 ) * cellSize * 1,
+							p.y + ( Math.random() - 0.5 ) * cellSize * 1,
+							p.z + ( Math.random() - 0.5 ) * cellSize * 1
 						);
 					}
 				}
@@ -317,8 +317,9 @@
 				for ( let i = 0, l = objects.length; i < l; i ++ ) {
 
 					const object = objects[ i ];
+					const scale = 1 + (parseInt(object.uuid.replace(/-/g,'').slice(0,8), 32) % 1001) / 1000;
 					//const scale = Math.sin( ( Math.floor( object.position.x ) + time ) * 0.002 ) * 0.3 + 1;
-					const scale = 1;
+					//const scale = 1;
 					object.scale.set( scale, scale, scale );
 
 				}
