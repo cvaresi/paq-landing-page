@@ -53,7 +53,9 @@
 			function init() {
 
 				camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 5000 );
-				camera.position.set( 600, 400, 5000 );
+				camera.position.set(  -500, 0, 5000 );
+				//camera.position.set( 600, 400, 5000 );
+				//camera.position.set( [] );
 				camera.lookAt( 0, 0, 0 );
 
 				scene = new THREE.Scene();
@@ -122,7 +124,7 @@
 					const z = Math.floor( i / ( amount * amount ) ) * separationCube;
 
 					positions.push( x - offset, y - offset, z - offset );
-					camera.position.set( 600, 1400, 5000 );
+					
 
 				}
 
