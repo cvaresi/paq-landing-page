@@ -69,9 +69,13 @@
 
 				function tryCreateSprites() {
 					if ( loadedCount !== spriteUrls.length ) return;
+					// Sprite index order: magenta, pink, green, black (for Equalizer columns L→R)
+					const spriteIndexByCol = [ 0, 2, 3, 1 ];
 					for ( let i = 0; i < particlesTotal; i ++ ) {
-						const img = loadedImages[ Math.floor( Math.random() * loadedImages.length ) ].cloneNode();
+						const col = Math.floor( i / ( particlesTotal / 4 ) );
+						const img = loadedImages[ spriteIndexByCol[ col ] ].cloneNode();
 						const object = new CSS3DSprite( img );
+						object.userData.sizeScale = 0.45 + Math.random() * 0.55;
 						object.position.x = Math.random() * 4000 - 2000;
 						object.position.y = Math.random() * 4000 - 2000;
 						object.position.z = Math.random() * 4000 - 2000;
@@ -91,41 +95,19 @@
 					image.src = url;
 				} );
 
-				// Plane
-
-				const amountX = 16;
-				const amountZ = 32;
-				const separationPlane = 300;
-				const offsetX = ( ( amountX - 1 ) * separationPlane ) / 2;
-				const offsetZ = ( ( amountZ - 1 ) * separationPlane ) / 2;
+			// Random
 
 				for ( let i = 0; i < particlesTotal; i ++ ) {
 
-					const x = ( i % amountX ) * separationPlane;
-					const z = Math.floor( i / amountX ) * separationPlane;
-					const y = ( Math.sin( x * 0.5 ) + Math.sin( z * 0.5 ) ) * 200;
-
-					positions.push( x - offsetX, y, z - offsetZ );
-
-				}
-
-				// Cube
-
-				const amount = 8;
-				const separationCube = 450;
-				const offset = ( ( amount - 1 ) * separationCube ) / 2;
-
-				for ( let i = 0; i < particlesTotal; i ++ ) {
-
-					const x = ( i % amount ) * separationCube;
-					const y = Math.floor( ( i / amount ) % amount ) * separationCube;
-					const z = Math.floor( i / ( amount * amount ) ) * separationCube;
-
-					positions.push( x - offset, y - offset, z - offset );
+					positions.push(
+						Math.random() * 10000 - 5000,
+						Math.random() * 10000 - 5000,
+						Math.random() * 10000 - 5000
+					);
 
 				}
-
-				// LQ Letters (match reference: L = thick bars, Q = thick ring + center sphere + tail)
+/*
+			// LQ Letters (match reference: L = thick bars, Q = thick ring + center sphere + tail)
 
 				const cellSize = 250;
 				const letterGap = 3;
@@ -221,18 +203,66 @@
 						);
 					}
 				}
+*/CSS3DRenderer
+			// Equalizer — four tapered columns: magenta, pink, green, black (L→R); dense/wide at bottom, sparse toward top
 
-				// Random
+				const eqColCenters = [ -1500, -500, 500, 1500 ];
+				// Relative column top heights: green tallest, magenta 2nd, black ~3rd, pink shortest
+				const eqColHeightScale = [ 1, 1, 1, 1 ];
+				const eqColSpread = 500;
+				const eqYBase = 2000;
+				const eqYSpan = 3000;
+				const eqZSpread = 500;
 
 				for ( let i = 0; i < particlesTotal; i ++ ) {
 
-					positions.push(
-						Math.random() * 10000 - 5000,
-						Math.random() * 10000 - 5000,
-						Math.random() * 10000 - 5000
-					);
+					const col = Math.floor( i / ( particlesTotal / 4 ) );
+					const cx = eqColCenters[ col ];
+					const hScale = eqColHeightScale[ col ];
+					// Bias placement toward the bottom; rarer / higher as y increases
+					const t = Math.pow( Math.random(), 0.38 );
+					const y = eqYBase - t * eqYSpan * hScale;
+					const x = cx + ( Math.random() - 1 ) * eqColSpread;
+					const z = (  0.01 ) * eqZSpread;
+					positions.push( x, y, z );
 
 				}
+
+				/*
+				// Plane
+
+				const amountX = 16;
+				const amountZ = 32;
+				const separationPlane = 300;
+				const offsetX = ( ( amountX - 1 ) * separationPlane ) / 2;
+				const offsetZ = ( ( amountZ - 1 ) * separationPlane ) / 2;
+
+				for ( let i = 0; i < particlesTotal; i ++ ) {
+
+					const x = ( i % amountX ) * separationPlane;
+					const z = Math.floor( i / amountX ) * separationPlane;
+					const y = ( Math.sin( x * 0.5 ) + Math.sin( z * 0.5 ) ) * 200;
+
+					positions.push( x - offsetX, y, z - offsetZ );
+
+				}
+
+				// Cube
+
+				const amount = 8;
+				const separationCube = 450;
+				const offset = ( ( amount - 1 ) * separationCube ) / 2;
+
+				for ( let i = 0; i < particlesTotal; i ++ ) {
+
+					const x = ( i % amount ) * separationCube;
+					const y = Math.floor( ( i / amount ) % amount ) * separationCube;
+					const z = Math.floor( i / ( amount * amount ) ) * separationCube;
+
+					positions.push( x - offset, y - offset, z - offset );
+
+				}
+
 
 				// Sphere
 
@@ -250,7 +280,7 @@
 					);
 
 				}
-
+*/
 				//
 
 				renderer = new CSS3DRenderer();
@@ -266,6 +296,8 @@
 				window.addEventListener( 'resize', onWindowResize );
 
 			}
+
+			
 
 			function onWindowResize() {
 
@@ -301,7 +333,7 @@
 					.onComplete( transition )
 					.start();
 
-				current = ( current + 1 ) % 5;
+				current = ( current + 1 ) % 3;
 
 			}
 
@@ -317,10 +349,10 @@
 				for ( let i = 0, l = objects.length; i < l; i ++ ) {
 
 					const object = objects[ i ];
-					const scale = 1 + (parseInt(object.uuid.replace(/-/g,'').slice(0,8), 16) % 1001) / 1000;
+					//const scale = 1 + (parseInt(object.uuid.replace(/-/g,'').slice(0,4), 8) % 1001) / 1000;
 					//const scale = Math.sin( ( Math.floor( object.position.x ) + time ) * 0.002 ) * 0.3 + 1;
-					//const scale = 1;
-					object.scale.set( scale, scale, scale );
+					const s = ( object.userData.sizeScale != null ? object.userData.sizeScale : 1 ) * 0.5;
+					object.scale.set( s, s, s );
 
 				}
 
