@@ -40,7 +40,7 @@
 			let camera, scene, renderer;
 			//let controls;
 
-			const particlesTotal = 512;
+			const particlesTotal = 100;
 			const positions = [];
 			const objects = [];
 			let current = 0;
@@ -94,7 +94,7 @@
 					} );
 					image.src = url;
 				} );
-
+/*
 			// Random
 
 				for ( let i = 0; i < particlesTotal; i ++ ) {
@@ -106,7 +106,7 @@
 					);
 
 				}
-/*
+
 			// LQ Letters (match reference: L = thick bars, Q = thick ring + center sphere + tail)
 
 				const cellSize = 250;
@@ -203,7 +203,7 @@
 						);
 					}
 				}
-*/CSS3DRenderer
+*/
 			// Equalizer — four tapered columns: magenta, pink, green, black (L→R); dense/wide at bottom, sparse toward top
 
 				const eqColCenters = [ -1500, -500, 500, 1500 ];
@@ -229,7 +229,7 @@
 				}
 
 				/*
-				// Plane
+			// Plane
 
 				const amountX = 16;
 				const amountZ = 32;
@@ -349,9 +349,9 @@
 				for ( let i = 0, l = objects.length; i < l; i ++ ) {
 
 					const object = objects[ i ];
-					//const scale = 1 + (parseInt(object.uuid.replace(/-/g,'').slice(0,4), 8) % 1001) / 1000;
-					//const scale = Math.sin( ( Math.floor( object.position.x ) + time ) * 0.002 ) * 0.3 + 1;
-					const s = ( object.userData.sizeScale != null ? object.userData.sizeScale : 1 ) * 0.5;
+					//const scale = 1 + (parseInt(object.uuid.replace(/-/g,'').slice(0,16), 32) % 1001) / 1000;
+					const scale = Math.sin( ( Math.floor( object.position.x ) + time ) * 0.002 ) * 0.3 + 1;
+					const s = ( object.userData.sizeScale != null ? object.userData.sizeScale : 1 ) * 1;
 					object.scale.set( s, s, s );
 
 				}
