@@ -41,9 +41,11 @@
 			//let controls;
 
 			const particlesTotal = 100;
-			const positions = [];
 			const objects = [];
+			const formations = [];
 			let current = 0;
+			let applyFormationRef = null;
+			let formationsRef = null;
 
 		
 
@@ -67,21 +69,262 @@
 				const loadedImages = [];
 				let loadedCount = 0;
 
+				const spriteIndexByColor = {
+					magenta: 0,
+					pink: 2,
+					green: 3,
+					black: 1
+				};
+
+				function resolveSpriteIndex( color ) {
+					if ( typeof color === 'number' ) return color;
+					if ( typeof color !== 'string' ) return spriteIndexByColor.magenta;
+					const key = color.trim().toLowerCase();
+					return ( key in spriteIndexByColor ) ? spriteIndexByColor[ key ] : spriteIndexByColor.magenta;
+				}
+
+				function setSpriteAppearance( object, spec ) {
+					const visible = spec?.visible !== false;
+					object.visible = visible;
+					object.element.style.display = visible ? '' : 'none';
+
+					if ( spec?.color != null ) {
+						const spriteIndex = resolveSpriteIndex( spec.color );
+						const src = loadedImages[ spriteIndex ]?.src;
+						if ( src && object.element.src !== src ) object.element.src = src;
+					}
+
+					if ( spec?.scale != null ) object.userData.targetScale = spec.scale;
+				}
+
+				function makeFormationBuilder( name ) {
+					const specs = Array.from( { length: particlesTotal }, () => ( { visible: false } ) );
+					let visibleCount = 0;
+					let autoIndex = 0;
+
+					function applyDefaultVisible() {
+						for ( let i = 0; i < particlesTotal; i ++ ) {
+							specs[ i ].visible = i < visibleCount;
+						}
+					}
+
+					return {
+						name,
+						count( n ) {
+							visibleCount = Math.max( 0, Math.min( particlesTotal, Math.floor( n ) ) );
+							applyDefaultVisible();
+							autoIndex = 0;
+							return this;
+						},
+						sprite( index, spec ) {
+							const i = Math.max( 0, Math.min( particlesTotal - 1, Math.floor( index ) ) );
+							specs[ i ] = { ...specs[ i ], ...spec, visible: spec?.visible ?? specs[ i ].visible ?? true };
+							return this;
+						},
+						place( spec ) {
+							while ( autoIndex < particlesTotal && specs[ autoIndex ]?.visible === false && autoIndex < visibleCount ) autoIndex++;
+							const i = Math.min( particlesTotal - 1, autoIndex++ );
+							specs[ i ] = { ...specs[ i ], ...spec, visible: spec?.visible ?? ( i < visibleCount ) };
+							return this;
+						},
+						sprites( list ) {
+							for ( const spec of list ) this.place( spec );
+							return this;
+						},
+						build() {
+							applyDefaultVisible();
+							return { name, specs };
+						}
+					};
+				}
+
+				function addFormation( name, buildFn ) {
+					const b = makeFormationBuilder( name );
+					buildFn( b );
+					formations.push( b.build() );
+				}
+
+				function applyFormation( formation, { duration = 2000 } = {} ) {
+					const specs = formation.specs;
+					for ( let i = 0; i < particlesTotal; i ++ ) {
+						const object = objects[ i ];
+						const spec = specs[ i ] ?? { visible: false };
+
+						setSpriteAppearance( object, spec );
+
+						const toPos = {
+							x: spec?.x ?? object.position.x,
+							y: spec?.y ?? object.position.y,
+							z: spec?.z ?? object.position.z
+						};
+
+						new TWEEN.Tween( object.position )
+							.to( toPos, Math.random() * duration + duration )
+							.easing( TWEEN.Easing.Exponential.InOut )
+							.start();
+
+						const targetScale = ( spec?.scale != null ? spec.scale : ( object.userData.targetScale ?? 1 ) );
+						new TWEEN.Tween( object.scale )
+							.to( { x: targetScale, y: targetScale, z: targetScale }, Math.random() * duration + duration )
+							.easing( TWEEN.Easing.Exponential.InOut )
+							.start();
+					}
+				}
+
+				applyFormationRef = applyFormation;
+				formationsRef = formations;
+
 				function tryCreateSprites() {
 					if ( loadedCount !== spriteUrls.length ) return;
-					// Sprite index order: magenta, pink, green, black (for Equalizer columns L→R)
-					const spriteIndexByCol = [ 0, 2, 3, 1 ];
 					for ( let i = 0; i < particlesTotal; i ++ ) {
-						const col = Math.floor( i / ( particlesTotal / 4 ) );
-						const img = loadedImages[ spriteIndexByCol[ col ] ].cloneNode();
+						const img = loadedImages[ 0 ].cloneNode();
 						const object = new CSS3DSprite( img );
-						object.userData.sizeScale = 0.45 + Math.random() * 0.55;
+						object.userData.targetScale = 1;
 						object.position.x = Math.random() * 4000 - 2000;
 						object.position.y = Math.random() * 4000 - 2000;
 						object.position.z = Math.random() * 4000 - 2000;
 						scene.add( object );
 						objects.push( object );
 					}
+
+					// --- Example formations (Random → LQ Letters → Equalizer) ---
+
+					addFormation( 'Random', ( f ) => {
+						f.count( particlesTotal );
+						for ( let i = 0; i < particlesTotal; i ++ ) {
+							const colors = [ 'magenta', 'pink', 'green', 'black' ];
+							f.sprite( i, {
+								x: Math.random() * 10000 - 5000,
+								y: Math.random() * 10000 - 5000,
+								z: Math.random() * 10000 - 5000,
+								color: colors[ Math.floor( Math.random() * colors.length ) ],
+								scale: 0.45 + Math.random() * 0.55,
+								visible: true
+							} );
+						}
+					} );
+
+					addFormation( 'LQ Letters', ( f ) => {
+						// LQ Letters (match reference: L = thick bars, Q = thick ring + center sphere + tail)
+
+						const cellSize = 250;
+						const letterGap = 3;
+
+						// L: vertical bar 3 wide, full height; horizontal bar full width, 3 tall
+						const lBarW = 3;
+						const lBarH = 14;
+						const lFootW = 8;
+						const lFootH = 3;
+
+						const lPoints = [];
+						for ( let y = 0; y < lBarH; y ++ ) {
+							for ( let x = 0; x < lBarW; x ++ ) {
+								lPoints.push( { x, y } );
+							}
+						}
+						for ( let y = lBarH; y < lBarH + lFootH; y ++ ) {
+							for ( let x = 0; x < lFootW; x ++ ) {
+								lPoints.push( { x, y } );
+							}
+						}
+
+						// Q: thick ring (ellipse) + one center sphere + tail from lower-right
+						const qRows = 16;
+						const qCols = 16;
+						const qcx = qCols / 2;
+						const qcy = qRows / 2;
+						const qOuterRx = 6.5;
+						const qOuterRy = 7;
+						const qInnerRx = 3.5;
+						const qInnerRy = 4;
+
+						const qPoints = [];
+						for ( let gy = 0; gy < qRows; gy ++ ) {
+							for ( let gx = 0; gx < qCols; gx ++ ) {
+								const dx = gx - qcx;
+								const dy = gy - qcy;
+								const outerNorm = ( dx / qOuterRx ) * ( dx / qOuterRx ) + ( dy / qOuterRy ) * ( dy / qOuterRy );
+								const innerNorm = ( dx / qInnerRx ) * ( dx / qInnerRx ) + ( dy / qInnerRy ) * ( dy / qInnerRy );
+								const inRing = outerNorm <= 1.08 && innerNorm >= 0.92;
+								if ( inRing ) qPoints.push( { x: gx, y: gy } );
+							}
+						}
+						// Center sphere (single point in the Q hole)
+						qPoints.push( { x: qcx, y: qcy } );
+						// Tail: lower-right diagonal
+						for ( let t = 0; t <= 8; t ++ ) {
+							qPoints.push( { x: qcx + 4 + t, y: qcy + 5 + Math.floor( t * 0.8 ) } );
+							if ( t > 0 && t < 8 ) qPoints.push( { x: qcx + 4 + t, y: qcy + 5 + Math.floor( t * 0.8 ) - 1 } );
+						}
+
+						// Offset Q to the right of L
+						const lMaxX = lFootW - 1;
+						const allPoints = [];
+						for ( const p of lPoints ) allPoints.push( { x: p.x, y: p.y } );
+						for ( const p of qPoints ) allPoints.push( { x: p.x + lMaxX + letterGap, y: p.y } );
+
+						// Center combined shape and map to world (y flipped for screen-like up)
+						let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+						for ( const p of allPoints ) {
+							if ( p.x < minX ) minX = p.x;
+							if ( p.x > maxX ) maxX = p.x;
+							if ( p.y < minY ) minY = p.y;
+							if ( p.y > maxY ) maxY = p.y;
+						}
+						const cenX = ( minX + maxX ) / 2;
+						const cenY = ( minY + maxY ) / 2;
+
+						const worldPoints = [];
+						for ( const p of allPoints ) {
+							worldPoints.push( {
+								x: ( p.x - cenX ) * cellSize,
+								y: - ( p.y - cenY ) * cellSize,
+								z: 0
+							} );
+						}
+
+						f.count( particlesTotal );
+						for ( let i = 0; i < particlesTotal; i ++ ) {
+							const base = worldPoints[ i % worldPoints.length ];
+							f.sprite( i, {
+								x: base.x + ( i >= worldPoints.length ? ( Math.random() - 0.5 ) * cellSize : 0 ),
+								y: base.y + ( i >= worldPoints.length ? ( Math.random() - 0.5 ) * cellSize : 0 ),
+								z: base.z + ( i >= worldPoints.length ? ( Math.random() - 0.5 ) * cellSize : 0 ),
+								color: 'magenta',
+								scale: 0.55,
+								visible: true
+							} );
+						}
+					} );
+
+					addFormation( 'Equalizer', ( f ) => {
+						// Equalizer — four tapered columns: magenta, pink, green, black (L→R); dense/wide at bottom, sparse toward top
+
+						const eqColCenters = [ -1500, -500, 500, 1500 ];
+						const eqColHeightScale = [ 0.88, 0.52, 1, 0.84 ];
+						const eqColSpread = 500;
+						const eqYBase = 2000;
+						const eqYSpan = 3000;
+						const eqZSpread = 500;
+						const colors = [ 'magenta', 'pink', 'green', 'black' ];
+
+						f.count( particlesTotal );
+						for ( let i = 0; i < particlesTotal; i ++ ) {
+							const col = Math.floor( i / ( particlesTotal / 4 ) );
+							const cx = eqColCenters[ col ];
+							const hScale = eqColHeightScale[ col ];
+							const t = Math.pow( Math.random(), 0.38 );
+							f.sprite( i, {
+								x: cx + ( Math.random() - 0.5 ) * eqColSpread,
+								y: eqYBase - t * eqYSpan * hScale,
+								z: ( Math.random() - 0.5 ) * eqZSpread,
+								color: colors[ col ],
+								scale: 0.5 + Math.random() * 0.7,
+								visible: true
+							} );
+						}
+					} );
+
 					transition();
 				}
 
@@ -94,140 +337,6 @@
 					} );
 					image.src = url;
 				} );
-/*
-			// Random
-
-				for ( let i = 0; i < particlesTotal; i ++ ) {
-
-					positions.push(
-						Math.random() * 10000 - 5000,
-						Math.random() * 10000 - 5000,
-						Math.random() * 10000 - 5000
-					);
-
-				}
-
-			// LQ Letters (match reference: L = thick bars, Q = thick ring + center sphere + tail)
-
-				const cellSize = 250;
-				const letterGap = 3;
-
-				// L: vertical bar 3 wide, full height; horizontal bar full width, 3 tall
-				const lBarW = 3;
-				const lBarH = 14;
-				const lFootW = 8;
-				const lFootH = 3;
-
-				const lPoints = [];
-				for ( let y = 0; y < lBarH; y ++ ) {
-					for ( let x = 0; x < lBarW; x ++ ) {
-						lPoints.push( { x, y } );
-					}
-				}
-				for ( let y = lBarH; y < lBarH + lFootH; y ++ ) {
-					for ( let x = 0; x < lFootW; x ++ ) {
-						lPoints.push( { x, y } );
-					}
-				}
-
-				// Q: thick ring (ellipse) + one center sphere + tail from lower-right
-				const qRows = 16;
-				const qCols = 16;
-				const qcx = qCols / 2;
-				const qcy = qRows / 2;
-				const qOuterRx = 6.5;
-				const qOuterRy = 7;
-				const qInnerRx = 3.5;
-				const qInnerRy = 4;
-
-				const qPoints = [];
-				for ( let gy = 0; gy < qRows; gy ++ ) {
-					for ( let gx = 0; gx < qCols; gx ++ ) {
-						const dx = gx - qcx;
-						const dy = gy - qcy;
-						const outerNorm = ( dx / qOuterRx ) * ( dx / qOuterRx ) + ( dy / qOuterRy ) * ( dy / qOuterRy );
-						const innerNorm = ( dx / qInnerRx ) * ( dx / qInnerRx ) + ( dy / qInnerRy ) * ( dy / qInnerRy );
-						const inRing = outerNorm <= 1.08 && innerNorm >= 0.92;
-						if ( inRing ) qPoints.push( { x: gx, y: gy } );
-					}
-				}
-				// Center sphere (single point in the Q hole)
-				qPoints.push( { x: qcx, y: qcy } );
-				// Tail: lower-right diagonal
-				for ( let t = 0; t <= 8; t ++ ) {
-					qPoints.push( { x: qcx + 4 + t, y: qcy + 5 + Math.floor( t * 0.8 ) } );
-					if ( t > 0 && t < 8 ) qPoints.push( { x: qcx + 4 + t, y: qcy + 5 + Math.floor( t * 0.8 ) - 1 } );
-				}
-
-				// Offset Q to the right of L
-				const lMaxX = lFootW - 1;
-				const allPoints = [];
-				for ( const p of lPoints ) {
-					allPoints.push( { x: p.x, y: p.y } );
-				}
-				for ( const p of qPoints ) {
-					allPoints.push( { x: p.x + lMaxX + letterGap, y: p.y } );
-				}
-
-				// Center combined shape and map to world (y flipped for screen-like up)
-				let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
-				for ( const p of allPoints ) {
-					if ( p.x < minX ) minX = p.x;
-					if ( p.x > maxX ) maxX = p.x;
-					if ( p.y < minY ) minY = p.y;
-					if ( p.y > maxY ) maxY = p.y;
-				}
-				const cenX = ( minX + maxX ) / 2;
-				const cenY = ( minY + maxY ) / 2;
-
-				const worldPoints = [];
-				for ( const p of allPoints ) {
-					worldPoints.push( {
-						x: ( p.x - cenX ) * cellSize,
-						y: - ( p.y - cenY ) * cellSize,
-						z: 0
-					} );
-				}
-
-				for ( let i = 0; i < particlesTotal; i ++ ) {
-					if ( i < worldPoints.length ) {
-						const p = worldPoints[ i ];
-						positions.push( p.x, p.y, p.z );
-					} else {
-						const idx = i % worldPoints.length;
-						const p = worldPoints[ idx ];
-						positions.push(
-							p.x + ( Math.random() - 0.5 ) * cellSize * 1,
-							p.y + ( Math.random() - 0.5 ) * cellSize * 1,
-							p.z + ( Math.random() - 0.5 ) * cellSize * 1
-						);
-					}
-				}
-*/
-			// Equalizer — four tapered columns: magenta, pink, green, black (L→R); dense/wide at bottom, sparse toward top
-
-				const eqColCenters = [ -1500, -500, 500, 1500 ];
-				// Relative column top heights: green tallest, magenta 2nd, black ~3rd, pink shortest
-				const eqColHeightScale = [ 1, 1, 1, 1 ];
-				const eqColSpread = 500;
-				const eqYBase = 2000;
-				const eqYSpan = 3000;
-				const eqZSpread = 500;
-
-				for ( let i = 0; i < particlesTotal; i ++ ) {
-
-					const col = Math.floor( i / ( particlesTotal / 4 ) );
-					const cx = eqColCenters[ col ];
-					const hScale = eqColHeightScale[ col ];
-					// Bias placement toward the bottom; rarer / higher as y increases
-					const t = Math.pow( Math.random(), 0.38 );
-					const y = eqYBase - t * eqYSpan * hScale;
-					const x = cx + ( Math.random() - 1 ) * eqColSpread;
-					const z = (  0.01 ) * eqZSpread;
-					positions.push( x, y, z );
-
-				}
-
 				/*
 			// Plane
 
@@ -310,30 +419,20 @@
 
 			function transition() {
 
-				const offset = current * particlesTotal * 3;
 				const duration = 2000;
 
-				for ( let i = 0, j = offset; i < particlesTotal; i ++, j += 3 ) {
+				const list = formationsRef ?? formations;
+				const applyFn = applyFormationRef ?? ( typeof applyFormation !== 'undefined' ? applyFormation : null );
 
-					const object = objects[ i ];
-
-					new TWEEN.Tween( object.position )
-						.to( {
-							x: positions[ j ],
-							y: positions[ j + 1 ],
-							z: positions[ j + 2 ]
-						}, Math.random() * duration + duration )
-						.easing( TWEEN.Easing.Exponential.InOut )
-						.start();
-
-				}
+				const formation = list[ current % list.length ];
+				if ( applyFn ) applyFn( formation, { duration } );
 
 				new TWEEN.Tween( this )
 					.to( {}, duration * 3 )
 					.onComplete( transition )
 					.start();
 
-				current = ( current + 1 ) % 3;
+				current = ( current + 1 ) % list.length;
 
 			}
 
@@ -349,10 +448,7 @@
 				for ( let i = 0, l = objects.length; i < l; i ++ ) {
 
 					const object = objects[ i ];
-					//const scale = 1 + (parseInt(object.uuid.replace(/-/g,'').slice(0,16), 32) % 1001) / 1000;
-					const scale = Math.sin( ( Math.floor( object.position.x ) + time ) * 0.002 ) * 0.3 + 1;
-					const s = ( object.userData.sizeScale != null ? object.userData.sizeScale : 1 ) * 1;
-					object.scale.set( s, s, s );
+					void time;
 
 				}
 
