@@ -338,13 +338,11 @@
 						f.sprite(102, { x: 1900, y:  2400, z: 1000,  color: 'black', scale: 0.4, visible: true });
 						f.sprite(103, { x: 2100, y:  2600, z: 700, color: 'black', scale: 0.4, visible: true });
 
-						// Optional: sequential placement without choosing indices
-						//f.place({ x: -300, y: 0, z: 0, color: 'pink', scale: 1.0, visible: true });
 					});
 /*
-					addFormation('My Custom Shape 2', (f) => {
+					addFormation('My Custom Shape', (f) => {
 					// 1) only show 12 sprites in this formation
-						f.count(6);
+						f.count(12);
 						// 2/3/4) individually place + set color + set scale
 						f.sprite(0, { x: -300, y:  -500, z: 5000, color: 'magenta', scale: 1.2, visible: true });
 						f.sprite(1, { x: -200, y:  -300, z: 600, color: 'pink',    scale: 0.8, visible: true });
@@ -352,11 +350,13 @@
 						f.sprite(3, { x:  0, y:  100, z: 2500, color: 'black',   scale: 1.4, visible: true });
 						f.sprite(4, { x: 100, y:  300, z: 1000, color: 'magenta', scale: 1.2, visible: true });
 						f.sprite(5, { x: 200, y:  500, z: 800, color: 'pink',    scale: 0.8, visible: true });
+						// And so on...
+
 						// Optional: sequential placement without choosing indices
 						//f.place({ x: -300, y: 0, z: 0, color: 'pink', scale: 1.0, visible: true });
 					});
 
-					// --- Example formations (Random → LQ Letters → Equalizer) ---
+					
 /*
 					addFormation( 'Random', ( f ) => {
 						f.count( particlesTotal );
@@ -372,7 +372,7 @@
 							} );
 						}
 					} );
-/*
+*/
 					addFormation( 'LQ Letters', ( f ) => {
 						// LQ Letters (match reference: L = thick bars, Q = thick ring + center sphere + tail)
 
@@ -464,36 +464,9 @@
 								visible: true
 							} );
 						}
-					} );
-
-					addFormation( 'Equalizer', ( f ) => {
-						// Equalizer — four tapered columns: magenta, pink, green, black (L→R); dense/wide at bottom, sparse toward top
-
-						const eqColCenters = [ -1500, -500, 500, 1500 ];
-						const eqColHeightScale = [ 0.88, 0.52, 1, 0.84 ];
-						const eqColSpread = 500;
-						const eqYBase = 2000;
-						const eqYSpan = 3000;
-						const eqZSpread = 500;
-						const colors = [ 'magenta', 'pink', 'green', 'black' ];
-
-						f.count( particlesTotal );
-						for ( let i = 0; i < particlesTotal; i ++ ) {
-							const col = Math.floor( i / ( particlesTotal / 4 ) );
-							const cx = eqColCenters[ col ];
-							const hScale = eqColHeightScale[ col ];
-							const t = Math.pow( Math.random(), 0.38 );
-							f.sprite( i, {
-								x: cx + ( Math.random() - 0.5 ) * eqColSpread,
-								y: eqYBase - t * eqYSpan * hScale,
-								z: ( Math.random() - 0.5 ) * eqZSpread,
-								color: colors[ col ],
-								scale: 0.5 + Math.random() * 0.7,
-								visible: true
-							} );
-						}
-					} );
-*/
+					});
+ 
+					// Run the formations in a sequence
 					transition();
 				}
 
@@ -506,59 +479,7 @@
 					} );
 					image.src = url;
 				} );
-				/*
-			// Plane
 
-				const amountX = 16;
-				const amountZ = 32;
-				const separationPlane = 300;
-				const offsetX = ( ( amountX - 1 ) * separationPlane ) / 2;
-				const offsetZ = ( ( amountZ - 1 ) * separationPlane ) / 2;
-
-				for ( let i = 0; i < particlesTotal; i ++ ) {
-
-					const x = ( i % amountX ) * separationPlane;
-					const z = Math.floor( i / amountX ) * separationPlane;
-					const y = ( Math.sin( x * 0.5 ) + Math.sin( z * 0.5 ) ) * 200;
-
-					positions.push( x - offsetX, y, z - offsetZ );
-
-				}
-
-				// Cube
-
-				const amount = 8;
-				const separationCube = 450;
-				const offset = ( ( amount - 1 ) * separationCube ) / 2;
-
-				for ( let i = 0; i < particlesTotal; i ++ ) {
-
-					const x = ( i % amount ) * separationCube;
-					const y = Math.floor( ( i / amount ) % amount ) * separationCube;
-					const z = Math.floor( i / ( amount * amount ) ) * separationCube;
-
-					positions.push( x - offset, y - offset, z - offset );
-
-				}
-
-
-				// Sphere
-
-				const radius = 2000;
-
-				for ( let i = 0; i < particlesTotal; i ++ ) {
-
-					const phi = Math.acos( - 1 + ( 2 * i ) / particlesTotal );
-					const theta = Math.sqrt( particlesTotal * Math.PI ) * phi;
-
-					positions.push(
-						radius * Math.cos( theta ) * Math.sin( phi ),
-						radius * Math.sin( theta ) * Math.sin( phi ),
-						radius * Math.cos( phi )
-					);
-
-				}
-*/
 				//
 
 				renderer = new CSS3DRenderer();
