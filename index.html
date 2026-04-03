@@ -223,6 +223,18 @@
 						objects.push( object );
 					}
 
+					addFormation('Intro', (f) => {
+					// Indicate the number of sprites
+						f.count(4);
+						// individually place + set color + set scale - Magenta column
+						f.sprite(0, { x: -1000, y:  0, z: 1000, color: 'magenta', scale: 1.0, visible: true });
+						f.sprite(1, { x: -333, y:  0, z: 1000, color: 'black', scale: 1.0, visible: true });
+						f.sprite(2, { x: 333, y:  0, z: 1000, color: 'pink', scale: 1.0, visible: true });
+						f.sprite(3, { x: 1000, y:  0, z: 1000, color: 'green', scale: 1.0, visible: true });
+						
+					});
+
+
 					addFormation('Equalizer', (f) => {
 					// Indicate the number of sprites
 						f.count(104);
@@ -339,42 +351,12 @@
 						f.sprite(103, { x: 2100, y:  2600, z: 700, color: 'black', scale: 0.4, visible: true });
 
 					});
-/*
-					addFormation('My Custom Shape', (f) => {
-					// 1) only show 12 sprites in this formation
-						f.count(12);
-						// 2/3/4) individually place + set color + set scale
-						f.sprite(0, { x: -300, y:  -500, z: 5000, color: 'magenta', scale: 1.2, visible: true });
-						f.sprite(1, { x: -200, y:  -300, z: 600, color: 'pink',    scale: 0.8, visible: true });
-						f.sprite(2, { x: -100, y:  -100, z: 0, color: 'green',   scale: 1.0, visible: true });
-						f.sprite(3, { x:  0, y:  100, z: 2500, color: 'black',   scale: 1.4, visible: true });
-						f.sprite(4, { x: 100, y:  300, z: 1000, color: 'magenta', scale: 1.2, visible: true });
-						f.sprite(5, { x: 200, y:  500, z: 800, color: 'pink',    scale: 0.8, visible: true });
-						// And so on...
 
-						// Optional: sequential placement without choosing indices
-						//f.place({ x: -300, y: 0, z: 0, color: 'pink', scale: 1.0, visible: true });
-					});
 
-					
-/*
-					addFormation( 'Random', ( f ) => {
-						f.count( particlesTotal );
-						for ( let i = 0; i < particlesTotal; i ++ ) {
-							const colors = [ 'magenta', 'pink', 'green', 'black' ];
-							f.sprite( i, {
-								x: Math.random() * 10000 - 5000,
-								y: Math.random() * 10000 - 5000,
-								z: Math.random() * 10000 - 5000,
-								color: colors[ Math.floor( Math.random() * colors.length ) ],
-								scale: 0.45 + Math.random() * 0.55,
-								visible: true
-							} );
-						}
-					} );
-*/
+
 					addFormation( 'LQ Letters', ( f ) => {
 						// LQ Letters (match reference: L = thick bars, Q = thick ring + center sphere + tail)
+						f.count(250);
 
 						const cellSize = 250;
 						const letterGap = 3;
