@@ -237,7 +237,7 @@
 
 					addFormation('LQ', (f) => {
 					// Indicate the number of sprites
-						f.count(40);
+						f.count(41);
 						// individually place + set color + set scale - Letter "L"
 						f.sprite(0, { x: -2000, y:  2400, z: 1000, color: 'magenta', scale: 1.7, visible: true });
 						f.sprite(1, { x: -1850, y:  2000, z: 800, color: 'black', scale: 0.9, visible: true });
@@ -281,6 +281,7 @@
 						f.sprite(39, { x: -400, y:  -800, z: 1000, color: 'magenta', scale: 1.5, visible: true });
 
 						// individually place + set color + set scale - Letter "Q"
+						f.sprite(40, { x: -100, y:  900, z: 1000, color: 'pink', scale: 0.6, visible: true });
 					});
 
 					/*
@@ -406,15 +407,16 @@
 					transition();
 				}
 
-				spriteUrls.forEach( function ( url ) {
-					const image = document.createElement( 'img' );
-					image.addEventListener( 'load', function () {
-						loadedImages.push( image );
-						loadedCount++;
-						tryCreateSprites();
-					} );
-					image.src = url;
-				} );
+				
+				spriteUrls.forEach((url, idx) => {
+				const image = document.createElement('img');
+				image.addEventListener('load', () => {
+					loadedImages[idx] = image;   // keep URL/index alignment
+					loadedCount++;
+					tryCreateSprites();
+				});
+				image.src = url;
+				});
 
 				//
 
