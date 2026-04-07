@@ -9,10 +9,10 @@
 			body {
 				background-color: #fff;
 				color: #000;
-				/*background-image: url('/img/flower.png');*/
+				/*background-image: url('/img/people.png');*/
 				background-size: 720px;
 				background-repeat: no-repeat;
-				background-position: 50% -50px;
+				background-position: 50% 0px;
 			}
 			a {
 				color: #48f;
@@ -227,7 +227,8 @@
 						objects.push( object );
 					}
 
-					
+					/*
+
 					addFormation('Intro', (f) => {
 					// Indicate the number of sprites
 						f.count(4);
@@ -705,7 +706,27 @@
 						f.sprite(162, { x: 1450, 	y:  -800,	z: 730, color: 'green', scale: 0.4, visible: true });
 
 					});
+					
+					*/
 
+					addFormation('People', (f) => {
+					// Indicate the number of sprites
+						f.count(8);
+						// individually place + set color + set scale - Magenta column
+						f.sprite(0, { x: -3000, y: 0, 		z: 1000, color: 'magenta', scale: 2.8, visible: true });
+						f.sprite(1, { x: -3000, y: 1150, 	z: 1000, color: 'magenta', scale: 1.8, visible: true });
+
+						f.sprite(2, { x: -1000, y: 0, 		z: 1000, color: 'black', scale: 2.8, visible: true });
+						f.sprite(3, { x: -1000, y: 1150, 	z: 1000, color: 'black', scale: 1.8, visible: true });
+
+						f.sprite(4, { x: 1000, y: 0, 		z: 1000, color: 'green', scale: 2.8, visible: true });
+						f.sprite(5, { x: 1000, y: 1150, 	z: 1000, color: 'green', scale: 1.8, visible: true });
+
+						f.sprite(6, { x: 3000, y: 0, 		z: 1000, color: 'pink', scale: 2.8, visible: true });
+						f.sprite(7, { x: 3000, y: 1150, 	z: 1000, color: 'pink', scale: 1.8, visible: true });
+
+												
+					});
 
 					// Run the formations in a sequence
 				// Wave formation: grid of sprites arranged into a multi-period sine wave
