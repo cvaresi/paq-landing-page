@@ -9,7 +9,7 @@
 			body {
 				background-color: #fff;
 				color: #000;
-				/*background-image: url('/img/people.png');*/
+				background-image: url('/img/workstreams.png');
 				background-size: 720px;
 				background-repeat: no-repeat;
 				background-position: 50% 0px;
@@ -229,7 +229,7 @@
 
 					/*
 
-					addFormation('Intro', (f) => {
+					addFormation('intro', (f) => {
 					// Indicate the number of sprites
 						f.count(4);
 						// individually place + set color + set scale - Magenta column
@@ -391,7 +391,7 @@
 					});
 
 					
-					addFormation('Equalizer', (f) => {
+					addFormation('equalizer', (f) => {
 					// Indicate the number of sprites
 						f.count(104);
 						// individually place + set color + set scale - Magenta column
@@ -512,7 +512,7 @@
 					
 					CSS3DRenderer
 
-					addFormation('Flower', (f) => {
+					addFormation('flower', (f) => {
 					// Indicate the number of sprites
 						f.count(163);
 						// individually place + set color + set scale - Petals column
@@ -707,12 +707,12 @@
 
 					});
 					
-					*/
+					
 
-					addFormation('People', (f) => {
+					addFormation('people', (f) => {
 					// Indicate the number of sprites
 						f.count(8);
-						// individually place + set color + set scale - Magenta column
+						// individually place + set color + set scale
 						f.sprite(0, { x: -3000, y: 0, 		z: 1000, color: 'magenta', scale: 2.8, visible: true });
 						f.sprite(1, { x: -3000, y: 1150, 	z: 1000, color: 'magenta', scale: 1.8, visible: true });
 
@@ -724,35 +724,122 @@
 
 						f.sprite(6, { x: 3000, y: 0, 		z: 1000, color: 'pink', scale: 2.8, visible: true });
 						f.sprite(7, { x: 3000, y: 1150, 	z: 1000, color: 'pink', scale: 1.8, visible: true });
-
-												
+				
 					});
 
+*/
+					addFormation('workstreams', (f) => {
+					// Indicate the number of sprites
+						f.count(85);
+						// individually place + set color + set scale - Input stream
+						f.sprite(0, { x: -4500, y: 0, 	z: 1000, color: 'magenta', scale: 0.5, visible: true });
+						f.sprite(1, { x: -4200, y: 0, 	z: 1000, color: 'green', scale: 0.5, visible: true });
+						f.sprite(2, { x: -3900, y: 0, 	z: 1000, color: 'pink', scale: 0.5, visible: true });
+						f.sprite(3, { x: -3600, y: 0, 	z: 1000, color: 'black', scale: 0.5, visible: true });
+						f.sprite(4, { x: -3300, y: 0, 	z: 1000, color: 'green', scale: 0.5, visible: true });
+						f.sprite(5, { x: -3000, y: 0, 	z: 1000, color: 'magenta', scale: 0.5, visible: true });
+						f.sprite(6, { x: -2700, y: 0, 	z: 1000, color: 'black', scale: 0.5, visible: true });
+						f.sprite(7, { x: -2400, y: 0, 	z: 1000, color: 'magenta', scale: 0.5, visible: true });
+						f.sprite(8, { x: -2100, y: 0, 	z: 1000, color: 'pink', scale: 0.5, visible: true });
+						f.sprite(9, { x: -1800, y: 0, 	z: 1000, color: 'magenta', scale: 0.5, visible: true });
+						f.sprite(10, { x: -1500, y: 0, 	z: 1000, color: 'green', scale: 0.5, visible: true });
+						f.sprite(11, { x: -1200, y: 0, 	z: 1000, color: 'pink', scale: 0.5, visible: true });
+						f.sprite(12, { x: -900, y: 0, 	z: 1000, color: 'black', scale: 0.5, visible: true });
+						f.sprite(13, { x: -600, y: 0, 	z: 1000, color: 'green', scale: 0.5, visible: true });
+						f.sprite(14, { x: -300, y: 0, 	z: 1000, color: 'pink', scale: 0.5, visible: true });
+
+						// green transition
+						f.sprite(69, { x: 0,	y: 100,	z: 1000, color: 'green', scale: 0.5, visible: true });
+						f.sprite(70, { x: 300,	y: 200,	z: 1000, color: 'green', scale: 0.5, visible: true });
+						f.sprite(71, { x: 600, 	y: 300,	z: 1000, color: 'green', scale: 0.5, visible: true });
+						f.sprite(72, { x: 900, 	y: 350,	z: 1000, color: 'green', scale: 0.5, visible: true });
+
+						// green sorting line
+						f.sprite(15, { x: 1200, y: 350,	z: 1000, color: 'green', scale: 0.5, visible: true });
+						f.sprite(16, { x: 1500, y: 350,	z: 1000, color: 'green', scale: 0.5, visible: true });
+						f.sprite(17, { x: 1800, y: 350,	z: 1000, color: 'green', scale: 0.5, visible: true });
+						f.sprite(18, { x: 2100, y: 350,	z: 1000, color: 'green', scale: 0.5, visible: true });
+						f.sprite(19, { x: 2400, y: 350,	z: 1000, color: 'green', scale: 0.5, visible: true });
+						f.sprite(20, { x: 2700, y: 350,	z: 1000, color: 'green', scale: 0.5, visible: true });
+						f.sprite(21, { x: 3000, y: 350,	z: 1000, color: 'green', scale: 0.5, visible: true });
+						f.sprite(22, { x: 3300, y: 350,	z: 1000, color: 'green', scale: 0.5, visible: true });
+						f.sprite(23, { x: 3600, y: 350,	z: 1000, color: 'green', scale: 0.5, visible: true });
+						f.sprite(24, { x: 3900, y: 350,	z: 1000, color: 'green', scale: 0.5, visible: true });
+						f.sprite(25, { x: 4200, y: 350,	z: 1000, color: 'green', scale: 0.5, visible: true });
+						f.sprite(26, { x: 4500, y: 350,	z: 1000, color: 'green', scale: 0.5, visible: true });
+						f.sprite(27, { x: 4800, y: 350,	z: 1000, color: 'green', scale: 0.5, visible: true });
+						f.sprite(28, { x: 5100, y: 350,	z: 1000, color: 'green', scale: 0.5, visible: true });
+						f.sprite(29, { x: 5400, y: 350,	z: 1000, color: 'green', scale: 0.5, visible: true });
+
+						// black transition
+						f.sprite(73, { x: 900,	y: 350,	z: 990, color: 'black', scale: 0.5, visible: true });
+						f.sprite(74, { x: 1200,	y: 600,	z: 990, color: 'black', scale: 0.5, visible: true });
+						f.sprite(75, { x: 1500, y: 800,	z: 990, color: 'black', scale: 0.5, visible: true });
+						f.sprite(76, { x: 1800, y: 950,	z: 990, color: 'black', scale: 0.5, visible: true });
+						
+						// black sorting line
+						f.sprite(30, { x: 2100, y: 1000,	z: 1000, color: 'black', scale: 0.5, visible: true });
+						f.sprite(31, { x: 2400, y: 1000,	z: 1000, color: 'black', scale: 0.5, visible: true });
+						f.sprite(32, { x: 2700, y: 1000,	z: 1000, color: 'black', scale: 0.5, visible: true });
+						f.sprite(33, { x: 3000, y: 1000,	z: 1000, color: 'black', scale: 0.5, visible: true });
+						f.sprite(34, { x: 3300, y: 1000,	z: 1000, color: 'black', scale: 0.5, visible: true });
+						f.sprite(35, { x: 3600, y: 1000,	z: 1000, color: 'black', scale: 0.5, visible: true });
+						f.sprite(36, { x: 3900, y: 1000,	z: 1000, color: 'black', scale: 0.5, visible: true });
+						f.sprite(37, { x: 4200, y: 1000,	z: 1000, color: 'black', scale: 0.5, visible: true });
+						f.sprite(38, { x: 4500, y: 1000,	z: 1000, color: 'black', scale: 0.5, visible: true });
+						f.sprite(39, { x: 4800, y: 1000,	z: 1000, color: 'black', scale: 0.5, visible: true });
+						f.sprite(40, { x: 5100, y: 1000,	z: 1000, color: 'black', scale: 0.5, visible: true });
+						f.sprite(41, { x: 5400, y: 1000,	z: 1000, color: 'black', scale: 0.5, visible: true });
+
+						// pink transition
+						f.sprite(77, { x: 0,	y: -100,	z: 1000, color: 'pink', scale: 0.5, visible: true });
+						f.sprite(78, { x: 300,	y: -200,	z: 1000, color: 'pink', scale: 0.5, visible: true });
+						f.sprite(79, { x: 600, 	y: -300,	z: 1000, color: 'pink', scale: 0.5, visible: true });
+						f.sprite(80, { x: 900, 	y: -350,	z: 1000, color: 'pink', scale: 0.5, visible: true });
+
+						// pink sorting line
+						f.sprite(42, { x: 1200, y: -350,	z: 1000, color: 'pink', scale: 0.5, visible: true });
+						f.sprite(43, { x: 1500, y: -350,	z: 1000, color: 'pink', scale: 0.5, visible: true });
+						f.sprite(44, { x: 1800, y: -350,	z: 1000, color: 'pink', scale: 0.5, visible: true });
+						f.sprite(45, { x: 2100, y: -350,	z: 1000, color: 'pink', scale: 0.5, visible: true });
+						f.sprite(46, { x: 2400, y: -350,	z: 1000, color: 'pink', scale: 0.5, visible: true });
+						f.sprite(47, { x: 2700, y: -350,	z: 1000, color: 'pink', scale: 0.5, visible: true });
+						f.sprite(48, { x: 3000, y: -350,	z: 1000, color: 'pink', scale: 0.5, visible: true });
+						f.sprite(49, { x: 3300, y: -350,	z: 1000, color: 'pink', scale: 0.5, visible: true });
+						f.sprite(50, { x: 3600, y: -350,	z: 1000, color: 'pink', scale: 0.5, visible: true });
+						f.sprite(51, { x: 3900, y: -350,	z: 1000, color: 'pink', scale: 0.5, visible: true });
+						f.sprite(52, { x: 4200, y: -350,	z: 1000, color: 'pink', scale: 0.5, visible: true });
+						f.sprite(53, { x: 4500, y: -350,	z: 1000, color: 'pink', scale: 0.5, visible: true });
+						f.sprite(54, { x: 4800, y: -350,	z: 1000, color: 'pink', scale: 0.5, visible: true });
+						f.sprite(55, { x: 5100, y: -350,	z: 1000, color: 'pink', scale: 0.5, visible: true });
+						f.sprite(56, { x: 5400, y: -350,	z: 1000, color: 'pink', scale: 0.5, visible: true });
+
+						// magenta transition
+						f.sprite(81, { x: 900,	y: -350,	z: 990, color: 'magenta', scale: 0.5, visible: true });
+						f.sprite(82, { x: 1200,	y: -600,	z: 990, color: 'magenta', scale: 0.5, visible: true });
+						f.sprite(83, { x: 1500, y: -800,	z: 990, color: 'magenta', scale: 0.5, visible: true });
+						f.sprite(84, { x: 1800, y: -950,	z: 990, color: 'magenta', scale: 0.5, visible: true });
+						
+						// magenta sorting line
+						f.sprite(57, { x: 2100, y: -1000,	z: 1000, color: 'magenta', scale: 0.5, visible: true });
+						f.sprite(58, { x: 2400, y: -1000,	z: 1000, color: 'magenta', scale: 0.5, visible: true });
+						f.sprite(59, { x: 2700, y: -1000,	z: 1000, color: 'magenta', scale: 0.5, visible: true });
+						f.sprite(60, { x: 3000, y: -1000,	z: 1000, color: 'magenta', scale: 0.5, visible: true });
+						f.sprite(61, { x: 3300, y: -1000,	z: 1000, color: 'magenta', scale: 0.5, visible: true });
+						f.sprite(62, { x: 3600, y: -1000,	z: 1000, color: 'magenta', scale: 0.5, visible: true });
+						f.sprite(63, { x: 3900, y: -1000,	z: 1000, color: 'magenta', scale: 0.5, visible: true });
+						f.sprite(64, { x: 4200, y: -1000,	z: 1000, color: 'magenta', scale: 0.5, visible: true });
+						f.sprite(65, { x: 4500, y: -1000,	z: 1000, color: 'magenta', scale: 0.5, visible: true });
+						f.sprite(66, { x: 4800, y: -1000,	z: 1000, color: 'magenta', scale: 0.5, visible: true });
+						f.sprite(67, { x: 5100, y: -1000,	z: 1000, color: 'magenta', scale: 0.5, visible: true });
+						f.sprite(68, { x: 5400, y: -1000,	z: 1000, color: 'magenta', scale: 0.5, visible: true });
+
+					});
+
+
 					// Run the formations in a sequence
-				// Wave formation: grid of sprites arranged into a multi-period sine wave
-				/*
-				addFormation('Wave', (f) => {
-					const count = particlesTotal;
-					f.count( count );
-					const cols = 100; // number of sprites across the wave
-					const spacingX = 50; // horizontal spacing
-					const spacingY = 120; // vertical offset per row
-					const amp = 800; // wave amplitude
-					const colors = ['magenta','pink','green','black'];
-					for ( let i = 0; i < count; i ++ ) {
-						const col = i % cols;
-						const row = Math.floor( i / cols );
-						const phase = ( col / cols ) * Math.PI * 4; // multiple periods across width
-						const x = ( col - cols / 2 ) * spacingX;
-						const y = Math.sin( phase + row * 0.4 ) * amp + ( row - 2 ) * spacingY - 200;
-						const z = Math.cos( phase ) * 200;
-						const color = colors[ i % colors.length ];
-						const scale = 0.6 + Math.abs( Math.sin( phase ) ) * 0.8;
-						f.sprite( i, { x, y, z, color, scale, visible: true } );
-					}
-				});
-				*/
 					transition();
+
 				}
 
 				
