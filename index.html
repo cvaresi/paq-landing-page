@@ -5,9 +5,10 @@
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
 		<link type="text/css" rel="stylesheet" href="main.css">
+		<link rel="stylesheet" href="https://use.typekit.net/ngr6nsw.css">
 		<style>
 			body {
-			font-family: sans-serif;
+				font-family: 'proxima-nova',sans-serif;
 				background-color: #fff;
 				color: #000;
 				/*background-image: url('/img/hourglass.png');*/
@@ -17,6 +18,30 @@
 			}
 			a {
 				color: #48f;
+			}
+
+			p {
+				font-family: 'proxima-nova', sans-serif;
+				font-weight: 400;
+				font-style: normal;
+			}
+
+			h1, h2, h3, h4, strong {
+				font-family: 'proxima-nova', sans-serif;
+				font-weight: 800;
+				font-style: normal;
+			}
+
+			.info {
+				font-family: 'proxima-nova-condensed', sans-serif;
+				font-weight: 600;
+				font-style: normal;
+			}
+
+			.persona {
+				font-family: 'proxima-nova-extra-condensed', sans-serif;
+				font-weight: 700;
+				font-style: normal;
 			}
 
 			/* Formation overlay — style freely; sits above the WebGL/CSS3D canvas */
@@ -88,7 +113,7 @@
 				border: 2px solid #111;
 				background: rgba(255, 255, 255, 0.92);
 				color: #111;
-				transition: background 0.2s ease, color 0.2s ease, opacity 0.2s ease;
+				/*transition: background 0.2s ease, color 0.2s ease, opacity 0.2s ease;*/
 			}
 
 			.formation-nav__btn:hover:not(:disabled) {
@@ -175,7 +200,7 @@
 				},
 				{
 					title: 'LQ',
-					body: 'Letters take shape from hundreds of spheres—tight geometry, brand presence, and motion that holds attention.'
+					body: 'How we raise your <strong>Launch Quotient</strong>'
 				},
 				{
 					title: 'Equalizer',
@@ -195,7 +220,7 @@
 				},
 				{
 					title: 'Hourglass',
-					body: 'Time, focus, and transformation—grains and structure in a single form. You’ve reached the end.'
+					body: 'Time, focus, and transformation—grains and structure in a single form. You\'ve reached the end.'
 				}
 			];
 
@@ -244,8 +269,9 @@
 				const copy = formationCopy[ index ] ?? { title: '', body: '' };
 				const titleEl = document.getElementById( 'formation-title' );
 				const bodyEl = document.getElementById( 'formation-body' );
-				if ( titleEl ) titleEl.textContent = copy.title;
-				if ( bodyEl ) bodyEl.textContent = copy.body;
+
+				if ( titleEl ) titleEl.innerHTML = copy.title;
+				if ( bodyEl ) bodyEl.innerHTML = copy.body;
 			}
 
 			function updateFormationNavButtons() {
