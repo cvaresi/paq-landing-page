@@ -7,6 +7,7 @@
 		<link type="text/css" rel="stylesheet" href="main.css">
 		<style>
 			body {
+			font-family: sans-serif;
 				background-color: #fff;
 				color: #000;
 				/*background-image: url('/img/hourglass.png');*/
@@ -17,10 +18,116 @@
 			a {
 				color: #48f;
 			}
+
+			/* Formation overlay — style freely; sits above the WebGL/CSS3D canvas */
+			.formation-overlay {
+				position: fixed;
+				inset: 0;
+				z-index: 10;
+				pointer-events: none;
+				display: flex;
+				flex-direction: column;
+				justify-content: space-between;
+				padding: clamp(1rem, 4vw, 2.5rem);
+				box-sizing: border-box;
+			}
+
+			.formation-overlay__inner {
+				pointer-events: none;
+				display: flex;
+				flex-direction: column;
+				align-items: center;
+				gap: 1.5rem;
+				width: 100%;
+				max-width: 42rem;
+				margin: 0 auto;
+			}
+
+			.formation-copy {
+				pointer-events: auto;
+				text-align: center;
+				opacity: 0;
+				visibility: hidden;
+				transition: opacity 0.45s ease, visibility 0.45s ease;
+			}
+
+			.formation-copy.formation-copy--visible {
+				opacity: 1;
+				visibility: visible;
+			}
+
+			.formation-copy__title {
+				margin: 0 0 0.5rem;
+				font-size: clamp(1.5rem, 4vw, 2.25rem);
+				font-weight: 700;
+				letter-spacing: -0.02em;
+				line-height: 1.2;
+			}
+
+			.formation-copy__body {
+				margin: 0;
+				font-size: clamp(1rem, 2.2vw, 1.125rem);
+				line-height: 1.55;
+				color: #333;
+			}
+
+			.formation-nav {
+				pointer-events: auto;
+				display: flex;
+				flex-wrap: wrap;
+				gap: 0.75rem;
+				justify-content: center;
+				margin-top: auto;
+			}
+
+			.formation-nav__btn {
+				cursor: pointer;
+				font: inherit;
+				padding: 0.55rem 1.25rem;
+				border-radius: 999px;
+				border: 2px solid #111;
+				background: rgba(255, 255, 255, 0.92);
+				color: #111;
+				transition: background 0.2s ease, color 0.2s ease, opacity 0.2s ease;
+			}
+
+			.formation-nav__btn:hover:not(:disabled) {
+				background: #111;
+				color: #fff;
+			}
+
+			.formation-nav__btn:disabled {
+				opacity: 0.35;
+				cursor: not-allowed;
+			}
+
+			.formation-nav__btn--restart {
+				border-color: #0a6;
+				color: #063;
+			}
+
+			.formation-nav__btn--restart:hover:not(:disabled) {
+				background: #063;
+				color: #fff;
+			}
 		</style>
 	</head>
 	<body>
 		<div id="container"></div>
+
+		<div id="formation-overlay" class="formation-overlay" aria-label="Formation information">
+			<div class="formation-overlay__inner">
+				<div id="formation-copy" class="formation-copy" aria-live="polite" aria-atomic="true">
+					<h1 id="formation-title" class="formation-copy__title"></h1>
+					<p id="formation-body" class="formation-copy__body"></p>
+				</div>
+				<nav class="formation-nav" aria-label="Formation navigation">
+					<button type="button" id="formation-back" class="formation-nav__btn">Back</button>
+					<button type="button" id="formation-next" class="formation-nav__btn">Next</button>
+					<button type="button" id="formation-restart" class="formation-nav__btn formation-nav__btn--restart" hidden>Restart</button>
+				</nav>
+			</div>
+		</div>
 
 		<script type="importmap">
 			{
@@ -45,11 +152,168 @@
 			const particlesTotal = 500;
 			const objects = [];
 			const formations = [];
-			let current = 0;
 			let applyFormationRef = null;
 			let formationsRef = null;
 
-		
+			const FORMATION_TWEEN_DURATION_MS = 2000;
+			/** Max position/scale tween length matches applyFormation: duration + random * duration */
+			const FORMATION_ANIM_COMPLETE_MS = FORMATION_TWEEN_DURATION_MS * 2;
+			/** Time copy stays visible before auto-advancing (only while auto-play is on) */
+			const FORMATION_AUTO_HOLD_MS = FORMATION_TWEEN_DURATION_MS * 3;
+
+			let displayedFormationIndex = 0;
+			let formationCopyRevealTimer = null;
+			let formationAutoAdvanceTimer = null;
+			/** When false, formations only change via buttons (stopped by Next / Back) */
+			let formationAutoPlayActive = true;
+
+			/** One entry per formation, same order as addFormation calls */
+			const formationCopy = [
+				{
+					title: 'Four voices',
+					body: 'Every sprite starts as part of a simple line—four colors, one idea. This is where the story begins.'
+				},
+				{
+					title: 'LQ',
+					body: 'Letters take shape from hundreds of spheres—tight geometry, brand presence, and motion that holds attention.'
+				},
+				{
+					title: 'Equalizer',
+					body: 'Rhythm and data meet in vertical stacks—like sound turned spatial, alive and reactive.'
+				},
+				{
+					title: 'Bloom',
+					body: 'Petals, stem, and leaves emerge from color and placement—a rose built from light and glassy spheres.'
+				},
+				{
+					title: 'People',
+					body: 'Figures and silhouettes suggest collaboration—many points becoming something human.'
+				},
+				{
+					title: 'Workstreams',
+					body: 'Flows and connections between nodes—how work moves when everything is linked.'
+				},
+				{
+					title: 'Hourglass',
+					body: 'Time, focus, and transformation—grains and structure in a single form. You’ve reached the end.'
+				}
+			];
+
+			function clearFormationCopyTimer() {
+				if ( formationCopyRevealTimer != null ) {
+					clearTimeout( formationCopyRevealTimer );
+					formationCopyRevealTimer = null;
+				}
+			}
+
+			function clearFormationAutoAdvanceTimer() {
+				if ( formationAutoAdvanceTimer != null ) {
+					clearTimeout( formationAutoAdvanceTimer );
+					formationAutoAdvanceTimer = null;
+				}
+			}
+
+			function stopFormationAutoPlay() {
+				formationAutoPlayActive = false;
+				clearFormationAutoAdvanceTimer();
+			}
+
+			function scheduleFormationAutoAdvance() {
+				clearFormationAutoAdvanceTimer();
+				if ( ! formationAutoPlayActive ) return;
+				const list = formationsRef ?? formations;
+				if ( displayedFormationIndex >= list.length - 1 ) return;
+
+				formationAutoAdvanceTimer = setTimeout( () => {
+					formationAutoAdvanceTimer = null;
+					if ( ! formationAutoPlayActive ) return;
+					const L = formationsRef ?? formations;
+					if ( displayedFormationIndex >= L.length - 1 ) return;
+					goToFormation( displayedFormationIndex + 1 );
+				}, FORMATION_AUTO_HOLD_MS );
+			}
+
+			function setFormationCopyVisible( visible ) {
+				const el = document.getElementById( 'formation-copy' );
+				if ( ! el ) return;
+				el.classList.toggle( 'formation-copy--visible', visible );
+				el.setAttribute( 'aria-hidden', visible ? 'false' : 'true' );
+			}
+
+			function updateFormationCopyContent( index ) {
+				const copy = formationCopy[ index ] ?? { title: '', body: '' };
+				const titleEl = document.getElementById( 'formation-title' );
+				const bodyEl = document.getElementById( 'formation-body' );
+				if ( titleEl ) titleEl.textContent = copy.title;
+				if ( bodyEl ) bodyEl.textContent = copy.body;
+			}
+
+			function updateFormationNavButtons() {
+				const list = formationsRef ?? formations;
+				const n = list.length;
+				const backBtn = document.getElementById( 'formation-back' );
+				const nextBtn = document.getElementById( 'formation-next' );
+				const restartBtn = document.getElementById( 'formation-restart' );
+				const idx = displayedFormationIndex;
+				if ( backBtn ) backBtn.disabled = idx <= 0;
+				if ( nextBtn ) {
+					nextBtn.hidden = idx >= n - 1;
+					nextBtn.disabled = idx >= n - 1;
+				}
+				if ( restartBtn ) restartBtn.hidden = idx < n - 1;
+			}
+
+			function goToFormation( index ) {
+				const list = formationsRef ?? formations;
+				if ( list.length === 0 ) return;
+				const n = list.length;
+				const idx = ( ( index % n ) + n ) % n;
+
+				clearFormationCopyTimer();
+				clearFormationAutoAdvanceTimer();
+				if ( typeof TWEEN.removeAll === 'function' ) TWEEN.removeAll();
+
+				displayedFormationIndex = idx;
+				setFormationCopyVisible( false );
+				updateFormationCopyContent( idx );
+				updateFormationNavButtons();
+
+				const formation = list[ idx ];
+				const applyFn = applyFormationRef;
+				if ( applyFn ) applyFn( formation, { duration: FORMATION_TWEEN_DURATION_MS } );
+
+				formationCopyRevealTimer = setTimeout( () => {
+					formationCopyRevealTimer = null;
+					setFormationCopyVisible( true );
+					updateFormationNavButtons();
+					scheduleFormationAutoAdvance();
+				}, FORMATION_ANIM_COMPLETE_MS );
+			}
+
+			function setupFormationUI() {
+				const backBtn = document.getElementById( 'formation-back' );
+				const nextBtn = document.getElementById( 'formation-next' );
+				const restartBtn = document.getElementById( 'formation-restart' );
+				if ( backBtn && ! backBtn.dataset.wired ) {
+					backBtn.dataset.wired = '1';
+					backBtn.addEventListener( 'click', () => {
+						stopFormationAutoPlay();
+						if ( displayedFormationIndex > 0 ) goToFormation( displayedFormationIndex - 1 );
+					} );
+				}
+				if ( nextBtn && ! nextBtn.dataset.wired ) {
+					nextBtn.dataset.wired = '1';
+					nextBtn.addEventListener( 'click', () => {
+						stopFormationAutoPlay();
+						const list = formationsRef ?? formations;
+						if ( displayedFormationIndex < list.length - 1 ) goToFormation( displayedFormationIndex + 1 );
+					} );
+				}
+				if ( restartBtn && ! restartBtn.dataset.wired ) {
+					restartBtn.dataset.wired = '1';
+					restartBtn.addEventListener( 'click', () => goToFormation( 0 ) );
+				}
+			}
 
 			init();
 			animate();
@@ -232,7 +496,7 @@
 					addFormation('intro', (f) => {
 					// Indicate the number of sprites
 						f.count(4);
-						// individually place + set color + set scale - Magenta column
+						// individually place + set color + set scale - 4 spheres
 						f.sprite(0, { x: -900, y:  0, z: 1000, color: 'magenta', scale: 1.0, visible: true });
 						f.sprite(1, { x: -300, y:  0, z: 1000, color: 'black', scale: 1.0, visible: true });
 						f.sprite(2, { x: 300, y:  0, z: 1000, color: 'pink', scale: 1.0, visible: true });
@@ -286,7 +550,7 @@
 						f.sprite(38, { x: -800, y:  -800, z: 800, color: 'green', scale: 0.7, visible: true });
 						f.sprite(39, { x: -500, y:  -800, z: 1000, color: 'magenta', scale: 1.4, visible: true });
 
-						// individually place + set color + set scale - Letter "Q"
+						// Letter "Q"
 						f.sprite(40, { x: -400, y:  750, z: 1000, color: 'pink', scale: 0.6, visible: true });
 						f.sprite(41, { x: -400, y:  950, z: 800, color: 'magenta', scale: 0.6, visible: true });
 						f.sprite(42, { x: -100, y:  900, z: 1000, color: 'magenta', scale: 0.6, visible: true });
@@ -385,9 +649,6 @@
 						f.sprite(133, { x: 2800, y: -1000, z: 900, color: 'magenta', scale: 1.5, visible: true });
 						
 
-
-						
-					
 					});
 
 					
@@ -515,7 +776,7 @@
 					addFormation('flower', (f) => {
 					// Indicate the number of sprites
 						f.count(163);
-						// individually place + set color + set scale - Petals column
+						// individually place + set color + set scale - Petals 
 						f.sprite(0, { x: -100, 	y:  2400, 	z: 800, color: 'magenta', scale: 0.7, visible: true });
 						f.sprite(1, { x: -300, 	y:  2200, 	z: 810, color: 'magenta', scale: 0.7, visible: true });
 						f.sprite(2, { x: -450, 	y:  2000, 	z: 820, color: 'magenta', scale: 0.7, visible: true });
@@ -895,8 +1156,9 @@
 
 
 
-					// Run the formations in a sequence
-					transition();
+					// Manual navigation + copy synced after each formation finishes animating
+					setupFormationUI();
+					goToFormation( 0 );
 
 				}
 
@@ -938,25 +1200,6 @@
 
 			}
 
-			function transition() {
-
-				const duration = 2000;
-
-				const list = formationsRef ?? formations;
-				const applyFn = applyFormationRef ?? ( typeof applyFormation !== 'undefined' ? applyFormation : null );
-
-				const formation = list[ current % list.length ];
-				if ( applyFn ) applyFn( formation, { duration } );
-
-				new TWEEN.Tween( this )
-					.to( {}, duration * 5 ) // This is the duration each slide holds its position after transition
-					.onComplete( transition )
-					.start();
-
-				current = ( current + 1 ) % list.length;
-
-			}
-
 			function animate() {
 
 				requestAnimationFrame( animate );
@@ -974,7 +1217,7 @@
 					// Kinda cool pulsating effect from the original example
 					// const scale = Math.sin( ( Math.floor( object.position.x ) + time ) * 0.002 ) * -0.1 + 1;
 					// object.scale.set( scale, scale, scale )
-					//Hover effect on Y axis
+					// Hover effect on Y axis
 					object.position.y += Math.sin( time * speed + i * 0.35 ) * amp;
 					void time;
 
