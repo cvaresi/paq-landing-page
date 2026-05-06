@@ -374,56 +374,11 @@
 					green: 3
 				};
 
-				const LOCKED_COLOR_COUNTS = {
-					magenta: 96,
-					green: 27,
-					black: 38,
-					pink: 36
-				};
-
 				function resolveSpriteIndex( color ) {
 					if ( typeof color === 'number' ) return color;
 					if ( typeof color !== 'string' ) return spriteIndexByColor.magenta;
 					const key = color.trim().toLowerCase();
 					return ( key in spriteIndexByColor ) ? spriteIndexByColor[ key ] : spriteIndexByColor.magenta;
-				}
-
-				function buildLockedColorIndexPools() {
-					const colorOrder = [ 'magenta', 'green', 'black', 'pink' ];
-					const pools = {};
-					let nextIndex = 0;
-
-					for ( const color of colorOrder ) {
-						const count = LOCKED_COLOR_COUNTS[ color ] ?? 0;
-						pools[ color ] = [];
-						for ( let i = 0; i < count && nextIndex < particlesTotal; i ++ ) {
-							pools[ color ].push( nextIndex ++ );
-						}
-					}
-
-					const fallback = [];
-					for ( let i = nextIndex; i < particlesTotal; i ++ ) fallback.push( i );
-
-					return { pools, fallback };
-				}
-
-				function getLockedColorForSpriteIndex( index ) {
-					const magentaEnd = LOCKED_COLOR_COUNTS.magenta;
-					const greenEnd = magentaEnd + LOCKED_COLOR_COUNTS.green;
-					const blackEnd = greenEnd + LOCKED_COLOR_COUNTS.black;
-					const pinkEnd = blackEnd + LOCKED_COLOR_COUNTS.pink;
-
-					if ( index < magentaEnd ) return 'magenta';
-					if ( index < greenEnd ) return 'green';
-					if ( index < blackEnd ) return 'black';
-					if ( index < pinkEnd ) return 'pink';
-					return 'magenta';
-				}
-
-				function normalizeColorName( color ) {
-					if ( typeof color !== 'string' ) return null;
-					const key = color.trim().toLowerCase();
-					return ( key in spriteIndexByColor ) ? key : null;
 				}
 
 				function tweenSpriteVisibility( object, visible, duration ) {
@@ -464,6 +419,12 @@
 
 					if ( object.userData.visibilityTarget !== visible ) {
 						tweenSpriteVisibility( object, visible, duration );
+					}
+
+					if ( spec?.color != null ) {
+						const spriteIndex = resolveSpriteIndex( spec.color );
+						const src = loadedImages[ spriteIndex ]?.src;
+						if ( src && object.element.src !== src ) object.element.src = src;
 					}
 
 					if ( spec?.scale != null ) object.userData.targetScale = spec.scale;
@@ -516,35 +477,6 @@
 					formations.push( b.build() );
 				}
 
-				function remapFormationsToLockedColorPools() {
-					for ( const formation of formations ) {
-						const remappedSpecs = Array.from( { length: particlesTotal }, () => ( { visible: false } ) );
-						const { pools, fallback } = buildLockedColorIndexPools();
-						const nextByColor = { magenta: 0, green: 0, black: 0, pink: 0 };
-						let nextFallback = 0;
-
-						for ( const spec of formation.specs ) {
-							if ( spec?.visible === false ) continue;
-
-							const color = normalizeColorName( spec?.color );
-							let targetIndex = -1;
-
-							if ( color && nextByColor[ color ] < pools[ color ].length ) {
-								targetIndex = pools[ color ][ nextByColor[ color ]++ ];
-							} else if ( nextFallback < fallback.length ) {
-								targetIndex = fallback[ nextFallback ++ ];
-							}
-
-							if ( targetIndex < 0 || targetIndex >= particlesTotal ) continue;
-
-							const { color: _discardColor, ...specWithoutColor } = spec;
-							remappedSpecs[ targetIndex ] = { ...specWithoutColor, visible: true };
-						}
-
-						formation.specs = remappedSpecs;
-					}
-				}
-
 				function applyFormation( formation, { duration = 2000 } = {} ) {
 					const specs = formation.specs;
 					for ( let i = 0; i < particlesTotal; i ++ ) {
@@ -578,9 +510,7 @@
 				function tryCreateSprites() {
 					if ( loadedCount !== spriteUrls.length ) return;
 					for ( let i = 0; i < particlesTotal; i ++ ) {
-						const lockedColor = getLockedColorForSpriteIndex( i );
-						const lockedSpriteIndex = resolveSpriteIndex( lockedColor );
-						const img = loadedImages[ lockedSpriteIndex ].cloneNode();
+						const img = loadedImages[ 0 ].cloneNode();
 						const object = new CSS3DSprite( img );
 						object.userData.targetScale = 1;
 						object.userData.currentOpacity = 1;
@@ -1334,7 +1264,6 @@
 
 
 					// Manual navigation + copy synced after each formation finishes animating
-					remapFormationsToLockedColorPools();
 					setupFormationUI();
 					goToFormation( 0 );
 
